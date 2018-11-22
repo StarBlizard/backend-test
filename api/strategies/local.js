@@ -1,36 +1,28 @@
 'use strict';
 
-const passport      = require('../services/passport.js');
+const passport      = require('../services/passport');
 const LocalStrategy = require('passport-local').Strategy;
-// const User          = require('../models/user.js').user;
+const Users         = require('../models/users');
 
 module.exports = function(){
     return new LocalStrategy({
-        // by default, local strategy uses username and password, we will override with email
         usernameField : 'email',
         passwordField : 'password',
-        passReqToCallback : true // allows us to pass back the entire request to the callback
+        passReqToCallback : true
     },
     function(req, email, password, done){
-
-					return done(null, {  username : 'pepe'});
-/*
-      User.forge( {email : email })
-        .fetch()
-        .then( model => {
-
-					if(!model){
+      Users.findOne({ where : { email } }).then( user => {
+					if(!user){
 						console.log("Incorrect email: ", email);
 						return done(null, false, { message: 'Incorrect email' })
 					};
 
-					if(model.attributes.password != password){
-						console.log("Incorrect password: ", model.attributes.password, "!=", password);
+					if(user.get('password') != password){
+						console.log("Incorrect password: ", user.get('password'), "!=", password);
 						return done(null, false, { message: 'Incorrect password.' });
 					};
 
-
-				});
-*/
+					return done(null, user.toJSON());
+      });
 	});
 };

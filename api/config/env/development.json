@@ -11,7 +11,7 @@
 	},
 
 	"Database" : {
-		"database" : "backendTest",
+		"database" : "backendtest",
 		"username" : "blizzard",
 		"password" : "centauri",
     "connection" : {

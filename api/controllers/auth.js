@@ -1,7 +1,8 @@
 'use strict';
 
 const passport = require('passport');
-// const User     = require('../models/user.js').user;
+const Users    = require('../models/users');
+const _        = require('underscore');
 
 module.exports = {
 
@@ -10,8 +11,14 @@ module.exports = {
    */
   register(req, res){
     let data = req.body;
-
-		return res.status(200).send(true);
+    
+    Users.create(data).then(() => {
+      req.login(data, () => {
+        return res.status(200).send(true);
+      });
+    }).catch( error => {
+		  return res.status(401).send(true);
+    });
   },
 
 

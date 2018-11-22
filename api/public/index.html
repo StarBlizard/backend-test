@@ -1,1 +1,37 @@
-Hello world
+<!DOCTYPE>
+<html>
+  <head>
+    <title>Back End Test</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.js"
+            integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+            crossorigin="anonymous">
+    </script>
+
+    <script src="js/app/views/index/loginForm.js"></script>
+    <script src="js/app/views/index/registerForm.js"></script>
+    <script src="js/index.js"></script>
+
+  </head>
+
+  <body>
+    <section js-main>
+      
+      <h2>Login</h2> 
+      <section js-login-form>
+        Email: <input js-login-email></input>
+        Password: <input type="password" js-login-password></input>
+        <div><input type="button" value="login" js-login-button></input></div>
+      </section>
+
+      <hr/>
+
+      <h2>Or Register</h2> 
+      <section js-register-form>
+        Email: <input js-register-email></input>
+        Password: <input type="password" js-register-password></input>
+        Repeat Password: <input type="password" js-register-rep-password></input>
+        <div><input type="button" value="Register" js-register-button></input></div>
+      </section>
+    </section>
+  </body>
+</html>
