@@ -1,0 +1,12 @@
+{
+  "log" : "log/current.log",
+
+  "Server" : {
+    "PORT" : 3000,
+    "SSL"  : {
+      "ENABLED" : false,
+      "PORT"    : 8443,
+      "CERTS"   : { }
+    }
+	}
+}
