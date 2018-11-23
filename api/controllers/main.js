@@ -8,12 +8,13 @@ module.exports.alive = function(req, res){
 };
 
 module.exports.index = function(req, res){
-  res.sendFile(path.join(__dirname, '../public', 'index.html'));
+  if(!req.isAuthenticated()){
+    res.sendFile(path.join(__dirname, '../public', 'index.html'));
+  } else{
+    res.redirect("/home");
+  }
 };
 
 module.exports.home = function(req, res){
-  if(!req.session.passport.user){
-    return res.redirect('/');
-  }
   res.sendFile(path.join(__dirname, '../public', 'home.html'));
 };

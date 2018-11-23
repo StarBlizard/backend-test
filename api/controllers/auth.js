@@ -10,14 +10,18 @@ module.exports = {
    *  Register an user
    */
   register(req, res){
+    console.log(req.body, "AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
+    if(req.isAuthenticated()){ return res.redirect("/home"); }
+
     let data = req.body;
     
     Users.create(data).then(() => {
       req.login(data, () => {
-        return res.status(200).send(true);
+        return res.status(200).send(req.user);
+        console.log("REGISTRAAAAAAAAAAADO")
       });
     }).catch( error => {
-		  return res.status(401).send(true);
+		  return res.status(401).send(error);
     });
   },
 
@@ -26,8 +30,7 @@ module.exports = {
    *  Login callback
    */
   granted(req, res){
-    console.log(req.session.passport.user);
-    return res.status(200).send("Hello user");
+    return res.status(200).send(req.user);
   },
 
 

@@ -15,17 +15,6 @@ module.exports = {
       },
       products: {
         type: Sequelize.STRING
-      },
-      total: {
-        type: Sequelize.INTEGER
-      },
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE
       }
     });
   },
