@@ -1,7 +1,8 @@
 'use strict';
 
-const { connection } = require('../services/database');
 const Sequelize      = require('sequelize');
+const path           = require('path');
+const { connection } = require(path.join(process.env.PWD, '/services/database'));
 
 const Offers = connection.define('offers', {
   offerting: Sequelize.INTEGER,

@@ -1,5 +1,6 @@
-const { passport }           = require('./services/passport');
-const { app }                = require('./services/server');
+const path                   = require('path');
+const { passport }           = require(path.join(process.env.PWD, '/services/passport'));
+const { app }                = require(path.join(process.env.PWD, '/services/server'));
 
 // Controllers
 const { alive, index, home } = require('./controllers/main');

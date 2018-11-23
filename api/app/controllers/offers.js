@@ -1,7 +1,8 @@
 'use strict';
 
+const path     = require('path');
 const passport = require('passport');
-const Offers   = require('../models/offers');
+const Offers   = require(path.join(process.env.PWD, '/db/models/offers'));
 
 let offersController = {};
 

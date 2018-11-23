@@ -1,9 +1,10 @@
 'use strict';
 
-const { connection } = require('../services/database');
+const path           = require('path');
+const Sequelize      = require('sequelize');
+const { connection } = require(path.join(process.env.PWD, '/services/database'));
 const Offers         = require('./offers');
 const Discounts      = require('./discounts');
-const Sequelize      = require('sequelize');
 
 const products = connection.define('products', {
   type: Sequelize.STRING,

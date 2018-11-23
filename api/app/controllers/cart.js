@@ -1,11 +1,12 @@
 'use strict';
 
+const path     = require('path');
 const passport = require('passport');
-const Users    = require('../models/users');
-const Carts    = require('../models/carts');
-const Products = require('../models/products');
-const Offers   = require('../models/offers');
-const Discounts= require('../models/discounts');
+const Users    = require(path.join(process.env.PWD, '/db/models/users'));
+const Carts    = require(path.join(process.env.PWD, '/db/models/carts'));
+const Products = require(path.join(process.env.PWD, '/db/models/products'));
+const Offers   = require(path.join(process.env.PWD, '/db/models/offers'));
+const Discounts= require(path.join(process.env.PWD, '/db/models/discounts'));
 const _        = require('underscore');
 
 let cartsController = {};

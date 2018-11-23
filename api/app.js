@@ -5,4 +5,4 @@ require('./services/database').init();
 require('./services/passport').init();
 require('./services/server').init();
 
-require('./routes');
+require('./app/routes');

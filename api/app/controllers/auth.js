@@ -1,7 +1,8 @@
 'use strict';
 
+const path     = require('path');
 const passport = require('passport');
-const Users    = require('../models/users');
+const Users    = require(path.join(process.env.PWD, '/db/models/users'));
 const _        = require('underscore');
 
 module.exports = {
@@ -10,7 +11,6 @@ module.exports = {
    *  Register an user
    */
   register(req, res){
-    console.log(req.body, "AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
     if(req.isAuthenticated()){ return res.redirect("/home"); }
 
     let data = req.body;
@@ -18,7 +18,6 @@ module.exports = {
     Users.create(data).then(() => {
       req.login(data, () => {
         return res.status(200).send(req.user);
-        console.log("REGISTRAAAAAAAAAAADO")
       });
     }).catch( error => {
 		  return res.status(401).send(error);

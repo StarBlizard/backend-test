@@ -1,9 +1,9 @@
 'use strict';
 
+const path     = require('path');
 const passport = require('passport');
-const Users    = require('../models/users');
-const Carts    = require('../models/carts');
-const Products = require('../models/products');
+const Users    = require(path.join(process.env.PWD, '/db/models/users'));
+const Products = require(path.join(process.env.PWD, '/db/models/products'));
 
 let productsController = {};
 
