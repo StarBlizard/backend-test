@@ -2,10 +2,10 @@
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
-      return queryInterface.bulkInsert('offers', [{
-        offerting: 1,
-        howMany : 1,
-        gifting: 1
+      return queryInterface.bulkInsert('gifts', [{
+        buying: 1,
+        gifting: 1,
+        number : 1
       }], {});
   },
 

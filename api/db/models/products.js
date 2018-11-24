@@ -3,7 +3,7 @@
 const path           = require('path');
 const Sequelize      = require('sequelize');
 const { connection } = require(path.join(process.env.PWD, '/services/database'));
-const Offers         = require('./offers');
+const Gifts          = require('./gifts');
 const Discounts      = require('./discounts');
 
 const products = connection.define('products', {
@@ -12,7 +12,7 @@ const products = connection.define('products', {
 }, { timestamps : false });
 
 // associations can be defined here
-products.hasMany(Offers, { as : 'offers', foreignKey : 'offerting' });
-products.hasMany(Discounts, { as : 'discounts', foreignKey : 'buying' });
+products.hasMany(Gifts,     { as : 'gifts',     foreignKey : 'buying' });
+products.hasMany(Discounts, { as : 'discounts', foreignKey : 'discounted' });
 
 module.exports = products;

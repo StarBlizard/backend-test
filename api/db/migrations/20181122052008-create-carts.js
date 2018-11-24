@@ -15,6 +15,9 @@ module.exports = {
       },
       products: {
         type: Sequelize.STRING
+      },
+      total : {
+        type: Sequelize.INTEGER
       }
     });
   },
