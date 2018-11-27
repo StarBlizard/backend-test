@@ -53,7 +53,6 @@ module.exports.add = async (req, res) => {
   await cart
     .updateOffers()
     .then( () => {
-      console.log("ADDDDDDD", cart.get("products"));
       return res.status(200).send(cart);
     });
 };
@@ -79,7 +78,6 @@ module.exports.removeProduct = async (req, res) => {
 
   // Get the last product ID position
   let pos = cartProducts.lastIndexOf(productId+"");
-  console.log(cartProducts, pos);
 
   // Remove the last instance on the array
   cartProducts.splice(pos, 1);
