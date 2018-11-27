@@ -54,7 +54,11 @@ Carts.prototype.applyGifts = async function(product, cartProducts){
     let giftedProducts = cartGift.get("number")+missingGifts;
     let reducedPrice   = giftedProducts*product.price;
 
-    cartGift.update({ number : giftedProducts });
+    if (giftedProducts){
+      cartGift.update({ number : giftedProducts });
+    } else {
+      cartGift.destroy();
+    }
     
     this.set("products", cartProducts+"");
     this.set("total"   , this.get("total") - reducedPrice);
@@ -65,19 +69,19 @@ Carts.prototype.applyGifts = async function(product, cartProducts){
 
 Carts.prototype.applyDiscount = async function(product, cartProducts){
   product.discounts.forEach( async discount => {
-    let total             = this.get("total");
-    let productFrequenty  = getFrequenty(discount.buying, cartProducts);
-    let productTotalPrice = productFrequenty*product.price;
+    let buyingFrequenty      = getFrequenty(discount.buying, cartProducts);
+    let discountingFrequenty = getFrequenty(product.id     , cartProducts);
+    let productTotalPrice    = discountingFrequenty*product.price;
 
     // If the user haven't the enough number of products to apply the discount, do nothing
-    if (productFrequenty < discount.howMany) { 
-      return this.set("total", total+productTotalPrice); 
+    if (buyingFrequenty < discount.howMany) { 
+      return this; 
     }
 
-    // Total price of all products that will be discounted
-    productTotalPrice -= (productTotalPrice/100)*discount.discounting; 
+    // Total discount of all products that will be discounted
+    let totalDiscount = (productTotalPrice/100)*discount.discounting; 
 
-    return this.set("total", this.get("total")+productTotalPrice);
+    return this.set("total", this.get("total")-totalDiscount);
   });
 };
 
@@ -85,7 +89,7 @@ Carts.prototype.calculateTotal = function(product, cartProducts){
   let productFrequenty  = getFrequenty(product.id, cartProducts);
   let productTotalPrice = productFrequenty*product.price;
 
-  this.set("total", productTotalPrice);
+  this.set("total", this.get("total")+productTotalPrice);
 };
 
 // This method should be be called from a Cart Model 
@@ -111,7 +115,7 @@ Carts.prototype.updateOffers = function(){
       product = product.toJSON();
 
       this.calculateTotal(product, cartProducts);
-      this.applyDiscount(product, cartProducts);
+      this.applyDiscount(product, cartProducts); // <- here
       this.applyGifts(product, cartProducts);
     }); 
 
