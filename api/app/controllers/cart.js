@@ -1,196 +1,140 @@
 'use strict';
 
-const path     = require('path');
-const passport = require('passport');
-const Users    = require(path.join(process.env.PWD, '/db/models/users'));
-const Carts    = require(path.join(process.env.PWD, '/db/models/carts'));
-const Products = require(path.join(process.env.PWD, '/db/models/products'));
-const Offers   = require(path.join(process.env.PWD, '/db/models/offers'));
-const Discounts= require(path.join(process.env.PWD, '/db/models/discounts'));
-const _        = require('underscore');
+const path          = require('path');
+const passport      = require('passport');
+const _             = require('underscore');
+const Users         = require(path.join(process.env.PWD, '/db/models/users'));
+const Carts         = require(path.join(process.env.PWD, '/db/models/carts'));
+const Products      = require(path.join(process.env.PWD, '/db/models/products'));
+const Gifts         = require(path.join(process.env.PWD, '/db/models/gifts'));
+const Discounts     = require(path.join(process.env.PWD, '/db/models/discounts'));
+const CartGifts     = require(path.join(process.env.PWD, '/db/models/cartgifts'));
 
-let cartsController = {};
+const getFrequenty = require(path.join(process.env.PWD, '/app/lib/getFrequenty'));
 
-function getFrequenty(num, arr){
-  return arr.reduce((total, element) => { return element == num ? total+1 : total }, 0);
-};
-
-function parseCart(cart, productTypes){
-  // cart -> Model Cart, productTypes -> all product types on the cart
-
-  // Get all available Discounts
-  let discounts   = productTypes.map(product => product.toJSON().discounts[0]);
-  
-  // Get all offers applied to the cart
-  let offers   = productTypes.map(product => product.toJSON().offers[0]);
-
-  // Get all products on the cart
-  let products = cart.products.split(",");
-  
-  // Calculate the total cost including the offer
-  cart.total = productTypes.reduce((total, element) => { 
-    let product      = element.toJSON();
-
-    // Get the offer that can be applied to this product (will be false if no one can)
-    let productDisc = _.find(discounts, function(discount){ 
-      return discount ? discount.discounted == product.id : false; 
-    });
-
-    // Get the offer that can be applied to this product (will be false if no one can)
-    let productOffer = _.find(offers, function(offer){ return offer ? offer.offerting == product.id : false; });
-
-    // Determine if the cart acomplish the offer condition
-    let condition    = productDisc ? getFrequenty(productDisc.buying, products) >= productDisc.howMany : false;
-
-    // Get the number of instances of the product type on the user's cart
-    let elementFrequenty = getFrequenty(product.id, products);
-
-    // Add a text description to send to the user about his cart
-    cart.description += `${product.type} x${elementFrequenty}\n`;
-
-    // Determine the total cost
-    let elementTotalCost = elementFrequenty*product.price; 
-
-    if (productOffer){
-      let saving = product.price*elementFrequenty/(1+productOffer.gifting);
-      cart.saving += saving;
-      elementTotalCost -= saving; 
-    }
-
-    if (condition){ 
-      // if the condition is true, apply the offer
-      let saving = (elementTotalCost/100)*productDisc.discounting;
-      cart.saving += saving;
-      elementTotalCost -= saving; 
-    }
-
-    return total += elementTotalCost;
-  }, 0);
-
-  return cart;
-};
-
-cartsController.add = function(req, res){
+module.exports.add = async (req, res) => {
   let { productId } = req.body;
   let { id }        = req.user;
 
   // Verify that the product exist
-  Products
-    .findOne({ where : { id : productId }, include : { model : Offers, as : 'offers' } })
-    .then( product => {
-      // If not, do nothing 
-      if (!product){ return res.status(401).send(false); }
+  let product = await Products.findOne({ 
+    where : { id : productId }, 
+    include : [{ 
+      model : Gifts, // Include possible gifts 
+      as : 'gifts' 
+    },{ 
+      model : Discounts,
+      as : 'discounts' // Include possible discounts
+    }]
+  });
+    
+  // If the product doesnt exists, do nothing 
+  if (!product){ return res.status(401).send(false); }
 
-      Carts
-        .findOrCreate({ where : { user : id }, defaults : { products : "" } })
-        .then( newCart => {
-          newCart = newCart[0];
-          // Add the product id as string 
-          let cartProducts = newCart.get("products") ? newCart.get("products").split(",") : [];
-          cartProducts.push(productId);
-          
-          product = product.toJSON();
-          if(product.offers[0]){
-            for(let i = 0; i< product.offers[0].gifting; i++){
-              cartProducts.push(productId);
-            }
-          }
+  let cart = await Carts.findOrCreate({ 
+    where : { user : id }, 
+    defaults : { products : "", total : 0 },
+    include : [{
+      model : CartGifts, // Include the current gifts that are already applied to the cart
+      as    : 'gifts' 
+    }]
+  });
 
-          // Save the cart products
-          newCart
-            .update({products : cartProducts+""})
-            .then( () => {
-              console.log("ADDDDDDD", cartProducts);
-              return res.status(200).send(true);
-            });
-        });
-      });
+  cart = cart[0];
+
+  // Add the product id as string 
+  let cartProducts = cart.get("products") ? cart.get("products").split(",") : [];
+
+  cartProducts.push(productId);
+
+  cart.set("products", cartProducts+"");
+
+  // Save the cart products
+  await cart
+    .updateOffers()
+    .then( () => {
+      console.log("ADDDDDDD", cart.get("products"));
+      return res.status(200).send(cart);
+    });
 };
 
-cartsController.removeProduct = function(req, res){
+module.exports.removeProduct = async (req, res) => {
   let { productId } = req.body;
-  let { id }  = req.user;
+  let { id }        = req.user;
 
   // Find the user's Cart
-  Carts
-    .findOrCreate({ where : { id }, defaults : { products : "" } })
-    .then( newCart => {
-        newCart = newCart[0];
+  let cart = await Carts.findOrCreate({ 
+    where : { user : id }, 
+    defaults : { products : "" },
+    include : [{
+      model : CartGifts, // Include the current gifts that are already applied to the cart
+      as    : 'gifts' 
+    }] 
+  });
 
-        // Get the last product ID position
-        let pos = str.lastIndexOf(productId+"");
+  cart = cart[0];
 
-        // Convert the string to array
-        let cartProducts = newCart.get("products").split(",");
+  // Convert the string to array
+  let cartProducts = cart.get("products").split(",");
 
-        // Remove the last instance on the array
-        cartProducts.splice(pos, 1);
+  // Get the last product ID position
+  let pos = cartProducts.lastIndexOf(productId+"");
+  console.log(cartProducts, pos);
 
-        newCart
-          // Save the array as string
-          .set("products", cartProducts + "")
-          .update()
-          .then( () => {
-            return res.status(200).send(true);
-          });
-      });
-};
+  // Remove the last instance on the array
+  cartProducts.splice(pos, 1);
 
-cartsController.clean = function(req, res){
-  let { id }  = req.user;
-
-  Carts
-    .findOrCreate({ where : { user : id }})
-    .then( newCart => {
-      newCart = newCart[0];
-      newCart
-        .update({ products : "" })
-        .then( () => {
-          return res.status(200).send(true);
-        });
+  cart
+    // Save the array as string
+    .set("products", cartProducts + "")
+    .updateOffers()
+    .then( () => {
+      return res.status(200).send(true);
     });
 };
 
-cartsController.get = function(req, res){
+module.exports.clean = async (req, res) => {
+  let { id } = req.user;
+
+  let cart = await Carts.findOrCreate({ 
+    where : { user : id },
+    defaults : { products : "" }, 
+    include : [{
+      model : CartGifts, // Include the current gifts that are already applied to the cart
+      as    : 'gifts' 
+    }]
+  });
+
+  cart = cart[0];
+  CartGifts.destroy({ where : { cart : cart.id } });
+
+  cart
+    .destroy()
+    .then( () => {
+      return res.status(200).send(true);
+    });
+};
+
+module.exports.get = async (req, res) => {
   // Get user ID
-  let { id }  = req.user;
+  let { id } = req.user;
 
   // Use the user ID to get its cart
-  Carts
-    .findOrCreate({ where : { user : id }, defaults : { products : "" } })
-    .then( newCart => {
-      newCart = newCart[0];
+  let cart = await Carts.findOrCreate({
+    where : { user : id },
+    defaults : { products : "" }, 
+    include : [{
+      model : CartGifts, // Include the current gifts that are already applied to the cart
+      as    : 'gifts' 
+    }] 
+  });
 
-      let cart = newCart.toJSON();
+  cart = cart[0];
 
-      // If the cart is empty, do nothing
-      if (!cart.products) { return res.status(200).send("Empty"); }
+  // If the cart is empty, do nothing
+  if (!cart.products) { return res.status(200).send("Empty"); }
 
-      // Get all products without duplicated elements
-      let productTypes = cart.products.split(",").filter(function(item, pos, self) {
-        return self.indexOf(item) == pos;
-      });
+  await cart.updateOffers(cart);
 
-      // get all product types that the user haves on its cart with its possible discounts
-      Products
-        .findAll({ where : { id : productTypes }, include : [{ 
-            model : Offers,
-            as : 'offers' 
-          },{ 
-            model : Discounts, 
-            as : 'discounts' 
-          }] 
-        })
-        .then( products => {
-          cart.description = "";
-
-          // To show the user how much is he saving
-          cart.saving = 0;
-
-          // Process data
-          res.status(200).send(parseCart(cart, products));
-        });
-    });
+  res.status(200).send(cart.toJSON());
 };
-
-module.exports = cartsController;

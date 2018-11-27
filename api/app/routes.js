@@ -6,7 +6,6 @@ const { app }                = require(path.join(process.env.PWD, '/services/ser
 const { alive, index, home } = require('./controllers/main');
 const cartController         = require('./controllers/cart');
 const productController      = require('./controllers/products');
-const offersController       = require('./controllers/offers');
 
 const authController         = require('./controllers/auth');
 const isAuthenticated        = require('./middleware/isAuthenticated');
@@ -34,6 +33,3 @@ app.get('/getCartProducts',    isAuthenticated, cartController.get);
 // Products
 app.post('/addProduct', isAuthenticated, productController.add);
 app.get('/getProducts', isAuthenticated, productController.get);
-
-// Offer
-app.post('/addOffer', isAuthenticated, offersController.add);
