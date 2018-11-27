@@ -9,9 +9,7 @@ const Products      = require(path.join(process.env.PWD, '/db/models/products'))
 const Gifts         = require(path.join(process.env.PWD, '/db/models/gifts'));
 const Discounts     = require(path.join(process.env.PWD, '/db/models/discounts'));
 const CartGifts     = require(path.join(process.env.PWD, '/db/models/cartgifts'));
-const CartDiscounts = require(path.join(process.env.PWD, '/db/models/cartdiscounts'));
 
-const cartLib      = require(path.join(process.env.PWD, '/app/lib/cart'));
 const getFrequenty = require(path.join(process.env.PWD, '/app/lib/getFrequenty'));
 
 module.exports.add = async (req, res) => {
@@ -35,51 +33,29 @@ module.exports.add = async (req, res) => {
 
   let cart = await Carts.findOrCreate({ 
     where : { user : id }, 
-    defaults : { products : "", total : 0 }, 
+    defaults : { products : "", total : 0 },
     include : [{
       model : CartGifts, // Include the current gifts that are already applied to the cart
       as    : 'gifts' 
-    },{
-      model : CartDiscounts, // Include the current discounts that are [...]
-      as    : 'discounts'
     }]
   });
 
   cart = cart[0];
-  let JSONcart = cart.toJSON(); 
 
   // Add the product id as string 
   let cartProducts = cart.get("products") ? cart.get("products").split(",") : [];
 
-  // Verify if the discount to this product has been aplied
-  let discounted   = _.find(cart.discounts, discount => { return discount.discounting == product.id });
-
-  cart.set("total", cart.get("total")+product.price)
   cartProducts.push(productId);
-
-  product = product.toJSON();
-         
-  // If a gift can be applied
-  if(product.gifts[0]){
-  // As cartProducts is a non-primitive value, it will be modified here 
-    await cartLib.applyGift(cart, product, cartProducts);
-  } 
 
   cart.set("products", cartProducts+"");
 
-  // If an discount can be applied
-  if(product.discounts[0] && !discounted){
-    // This will modify the cart "total" attribute
-    cartLib.applyDiscount(cart, product, cartProducts);
-  } 
-
-   // Save the cart products
-   cart
-     .save()
-     .then( () => {
-       console.log("ADDDDDDD", cartProducts);
-       return res.status(200).send(cart);
-     });
+  // Save the cart products
+  await cart
+    .updateOffers()
+    .then( () => {
+      console.log("ADDDDDDD", cart.get("products"));
+      return res.status(200).send(cart);
+    });
 };
 
 module.exports.removeProduct = async (req, res) => {
@@ -87,14 +63,23 @@ module.exports.removeProduct = async (req, res) => {
   let { id }        = req.user;
 
   // Find the user's Cart
-  let cart = await Carts.findOrCreate({ where : { id }, defaults : { products : "" } });
-  cart = cart[0];
+  let cart = await Carts.findOrCreate({ 
+    where : { user : id }, 
+    defaults : { products : "" },
+    include : [{
+      model : CartGifts, // Include the current gifts that are already applied to the cart
+      as    : 'gifts' 
+    }] 
+  });
 
-  // Get the last product ID position
-  let pos = str.lastIndexOf(productId+"");
+  cart = cart[0];
 
   // Convert the string to array
   let cartProducts = cart.get("products").split(",");
+
+  // Get the last product ID position
+  let pos = cartProducts.lastIndexOf(productId+"");
+  console.log(cartProducts, pos);
 
   // Remove the last instance on the array
   cartProducts.splice(pos, 1);
@@ -102,7 +87,7 @@ module.exports.removeProduct = async (req, res) => {
   cart
     // Save the array as string
     .set("products", cartProducts + "")
-    .update()
+    .updateOffers()
     .then( () => {
       return res.status(200).send(true);
     });
@@ -113,18 +98,15 @@ module.exports.clean = async (req, res) => {
 
   let cart = await Carts.findOrCreate({ 
     where : { user : id },
+    defaults : { products : "" }, 
     include : [{
       model : CartGifts, // Include the current gifts that are already applied to the cart
       as    : 'gifts' 
-    },{
-      model : CartDiscounts, // Include the current discounts that are [...]
-      as    : 'discounts'
     }]
   });
 
   cart = cart[0];
   CartGifts.destroy({ where : { cart : cart.id } });
-  CartDiscounts.destroy({ where : { cart : cart.id } });
 
   cart
     .destroy()
@@ -138,11 +120,21 @@ module.exports.get = async (req, res) => {
   let { id } = req.user;
 
   // Use the user ID to get its cart
-  let cart = await Carts.findOrCreate({ where : { user : id }, defaults : { products : "" } });
+  let cart = await Carts.findOrCreate({
+    where : { user : id },
+    defaults : { products : "" }, 
+    include : [{
+      model : CartGifts, // Include the current gifts that are already applied to the cart
+      as    : 'gifts' 
+    }] 
+  });
+
   cart = cart[0];
 
   // If the cart is empty, do nothing
   if (!cart.products) { return res.status(200).send("Empty"); }
+
+  await cart.updateOffers(cart);
 
   res.status(200).send(cart.toJSON());
 };

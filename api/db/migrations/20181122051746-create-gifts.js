@@ -14,7 +14,9 @@ module.exports = {
         key  : 'id'
       },
       gifting : {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        model: 'products',
+        key  : 'id'
       },
       number : {
         type: Sequelize.INTEGER
