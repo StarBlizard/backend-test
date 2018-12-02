@@ -1,7 +1,8 @@
 {
   "scripts": {
     "test": "node app.js",
-    "start": "node app.js"
+    "start": "node app.js",
+    "install-start": "npm install && npm start"
   },
   "dependencies": {
     "cookie-parser": "^1.4.3",
