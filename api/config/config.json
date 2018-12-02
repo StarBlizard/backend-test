@@ -1,5 +1,21 @@
 {
   "development": {
+		"database" : "docker",
+		"username" : "docker",
+		"password" : "docker",
+    "connection" : {
+      "host"    : "localhost",
+      "dialect" : "postgres",
+      "pool" : {
+        "max"     : 5,
+        "min"     : 0,
+        "acquire" : 30000,
+        "idle"    : 10000
+      }
+    }
+  },
+
+  "local": {
 		"database" : "backendtest",
 		"username" : "blizzard",
 		"password" : "centauri",

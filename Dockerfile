@@ -57,8 +57,8 @@ COPY ./api /src
 
 WORKDIR /src
 COPY ./scripts ./
-RUN chmod -R +x startup* /*/node_modules/*
-RUN NODE_ENV=development npm install
+RUN chmod -R +x startup* *node_modules/*
+CMD NODE_ENV=development npm install
 CMD NODE_ENV=development node_modules/.bin/sequelize db:migrate --migrations-path '/src/db/migrations'
 CMD NODE_ENV=development node_modules/.bin/sequelize db:seed:all --seeders-path '/src/db/seeders'
 EXPOSE 3000
