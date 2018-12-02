@@ -11,9 +11,9 @@
 	},
 
 	"Database" : {
-		"database" : "backendtest",
-		"username" : "blizzard",
-		"password" : "centauri",
+		"database" : "docker",
+		"username" : "docker",
+		"password" : "docker",
     "connection" : {
       "host"    : "localhost",
       "dialect" : "postgres",
