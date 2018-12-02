@@ -6,4 +6,5 @@ ADD api/package.json /src/package.json
 RUN npm install
 ADD api/nodemon.json /src/nodemon.json
 EXPOSE 3000
+CMD pwd
 CMD npm start
