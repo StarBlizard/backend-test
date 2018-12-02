@@ -1,5 +1,4 @@
 FROM ubuntu:latest
-FROM node:latest
 
 # Add the PostgreSQL PGP key to verify their Debian packages.
 # It should be the same key as https://www.postgresql.org/media/keys/ACCC4CF8.asc
@@ -45,6 +44,9 @@ VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 CMD ["/usr/lib/postgresql/9.3/bin/postgres", "-D", "/var/lib/postgresql/9.3/main", "-c", "config_file=/etc/postgresql/9.3/main/postgresql.conf"]
 
 RUN mkdir /src
+
+FROM node:latest
+
 RUN npm install nodemon -g
 
 
