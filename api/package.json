@@ -1,7 +1,7 @@
 {
   "scripts": {
     "test": "node ./app.js",
-    "start": "node ./app.js"
+    "start": "node ./.js"
   },
   "dependencies": {
     "cookie-parser": "^1.4.3",
