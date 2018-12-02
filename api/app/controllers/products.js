@@ -13,7 +13,15 @@ module.exports.add = (req, res) => {
 };
 
 module.exports.get = (req, res) => {
-  Products.all().then( products => {
-    return res.status(200).send(products);
-  }); 
+  let { id } = req.query;
+
+  if(id){
+    Products.findOne({ where : { id } }).then( products => {
+      return res.status(200).send(products);
+    });
+  } else {
+    Products.all().then( products => {
+      return res.status(200).send(products);
+    });
+  }
 };

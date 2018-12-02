@@ -1,7 +1,7 @@
 FROM ubuntu:latest
 RUN mkdir /src
 
-CMD apt-get update && apt-get install -my wget gnupg
+RUN apt-get update && apt-get install -my wget gnupg
 
 # Add the PostgreSQL PGP key to verify their Debian packages.
 # It should be the same key as https://www.postgresql.org/media/keys/ACCC4CF8.asc
@@ -9,7 +9,7 @@ CMD apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys B97
 
 # Add PostgreSQL's repository. It contains the most recent stable release
 #     of PostgreSQL, ``9.3``.
-CMD echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 
 # Install ``python-software-properties``, ``software-properties-common`` and PostgreSQL 9.3
 #  There are some warnings (in red) that show up during the build. You can hide
@@ -56,5 +56,5 @@ WORKDIR /src
 RUN NODE_ENV=development npm install
 CMD NODE_ENV=development node_modules/.bin/sequelize db:migrate --migrations-path '/src/db/migrations'
 CMD NODE_ENV=development node_modules/.bin/sequelize db:seed:all --seeders-path '/src/db/seeders'
-RUN NODE_ENV=development npm start
 EXPOSE 3000
+RUN NODE_ENV=development npm start
