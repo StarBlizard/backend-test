@@ -1,4 +1,7 @@
 FROM ubuntu:latest
+RUN mkdir /src
+
+RUN apt-get update && apt-get install -my wget gnupg
 
 # Add the PostgreSQL PGP key to verify their Debian packages.
 # It should be the same key as https://www.postgresql.org/media/keys/ACCC4CF8.asc
@@ -11,7 +14,7 @@ RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" > /etc
 # Install ``python-software-properties``, ``software-properties-common`` and PostgreSQL 9.3
 #  There are some warnings (in red) that show up during the build. You can hide
 #  them by prefixing each apt-get statement with DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y python-software-properties software-properties-common postgresql-9.3 postgresql-client-9.3 postgresql-contrib-9.3
+RUN apt-get update && apt-get install -y software-properties-common postgresql-9.3 postgresql-client-9.3 postgresql-contrib-9.3
 
 # Note: The official Debian and Ubuntu images automatically ``apt-get clean``
 # after each ``apt-get``
@@ -43,17 +46,15 @@ VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 # Set the default command to run when starting the container
 CMD ["/usr/lib/postgresql/9.3/bin/postgres", "-D", "/var/lib/postgresql/9.3/main", "-c", "config_file=/etc/postgresql/9.3/main/postgresql.conf"]
 
-RUN mkdir /src
 
 FROM node:latest
 
 RUN npm install nodemon -g
 
-
 COPY ./api /src
 WORKDIR /src
 RUN npm install
-RUN NODE_ENV=development node_modules/.bin/sequelize db:migrate --migrations-path '/src/db/migrations'
-RUN NODE_ENV=development node_modules/.bin/sequelize db:seed:all --seeders-path '/src/db/seeders'
+CMD NODE_ENV=development node_modules/.bin/sequelize db:migrate --migrations-path '/src/db/migrations'
+CMD NODE_ENV=development node_modules/.bin/sequelize db:seed:all --seeders-path '/src/db/seeders'
 EXPOSE 3000
 CMD NODE_ENV=development npm start
