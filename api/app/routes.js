@@ -31,5 +31,5 @@ app.get('/cleanCart',         isAuthenticated, cartController.clean);
 app.get('/getCartProducts',    isAuthenticated, cartController.get);
 
 // Products
-app.post('/addProduct', isAuthenticated, productController.add);
-app.get('/getProducts', isAuthenticated, productController.get);
+app.post('/addProduct', productController.add);
+app.get('/getProducts', productController.get);
