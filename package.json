@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "test": "cd api; npm start",
+    "start": "cd api; npm start"
+  }
+}
