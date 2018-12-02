@@ -4,15 +4,15 @@ module.exports = {
   up: (queryInterface, Sequelize) => {
       return queryInterface.bulkInsert('products', [{
         id : 1,
-        type: 'shirt',
+        name: 'shirt',
         price: 150
       },{
         id : 2,
-        type: 'shoes',
+        name: 'shoes',
         price: 180
       },{
         id : 3,
-        type: 'pants',
+        name: 'pants',
         price: 200
       }], {});
   },

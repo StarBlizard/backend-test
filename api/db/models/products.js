@@ -7,7 +7,7 @@ const Gifts          = require('./gifts');
 const Discounts      = require('./discounts');
 
 const products = connection.define('products', {
-  type: Sequelize.STRING,
+  name: Sequelize.STRING,
   price: Sequelize.INTEGER
 }, { timestamps : false });
 
