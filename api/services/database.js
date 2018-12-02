@@ -9,13 +9,13 @@ const Sequelize = require('sequelize');
 module.exports = {
 
   init(){
-    const { database, username, password } = nconf.get('Database'); 
+    const { database, username, password } = nconf.get('Database');
     const connection  = nconf.get('Database:connection');
 
     this.connection = new Sequelize(
-      database, 
+      database,
       username,
-      password, 
+      password,
       connection
     );
   }

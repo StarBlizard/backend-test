@@ -1,5 +1,4 @@
 FROM ubuntu:latest
-RUN mkdir /src
 
 RUN apt-get update && apt-get install -my wget gnupg
 
@@ -46,15 +45,22 @@ VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 # Set the default command to run when starting the container
 CMD ["/usr/lib/postgresql/9.3/bin/postgres", "-D", "/var/lib/postgresql/9.3/main", "-c", "config_file=/etc/postgresql/9.3/main/postgresql.conf"]
 
+######################
 
 FROM node:latest
+
+RUN mkdir /src
 
 RUN npm install nodemon -g
 
 COPY ./api /src
+
 WORKDIR /src
+COPY ./scripts ./
+RUN chmod -R +x startup* /*/node_modules/*
 RUN NODE_ENV=development npm install
 CMD NODE_ENV=development node_modules/.bin/sequelize db:migrate --migrations-path '/src/db/migrations'
 CMD NODE_ENV=development node_modules/.bin/sequelize db:seed:all --seeders-path '/src/db/seeders'
 EXPOSE 3000
-RUN NODE_ENV=development npm start
+
+ENTRYPOINT ["./startup.sh"]
