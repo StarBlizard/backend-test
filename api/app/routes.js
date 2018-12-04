@@ -27,9 +27,9 @@ app.get('/logout'   , authController.logout);
 // Cart
 app.post('/addCartProduct',    isAuthenticated, cartController.add);
 app.post('/removeCartProduct', isAuthenticated, cartController.removeProduct);
-app.get('/cleanCart',         isAuthenticated, cartController.clean);
+app.get('/cleanCart',          isAuthenticated, cartController.clean);
 app.get('/getCartProducts',    isAuthenticated, cartController.get);
 
 // Products
-app.post('/addProduct', productController.add);
-app.get('/getProducts', productController.get);
+app.post('/addProducts', productController.add);
+app.get('/getProducts' , productController.get);
